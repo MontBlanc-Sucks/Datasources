@@ -135,7 +135,10 @@ class ArraySource extends DataSource {
 		}
 		// Order
 		if (!empty($queryData['order'])) {
-			if (is_string($queryData['order'][0])) {
+			if (is_array($queryData['order'])) {
+				$queryData['order'] = array_filter($queryData['order']);
+			}
+			if (!empty($queryData['order']) && is_string($queryData['order'][0])) {
 				$field = $queryData['order'][0];
 				$alias = $model->alias;
 				if (strpos($field, '.') !== false) {
@@ -156,6 +159,9 @@ class ArraySource extends DataSource {
 		}
 		// Filter fields
 		if (!empty($queryData['fields'])) {
+			if (is_array($queryData['fields'])) {
+				$queryData['fields'] = array_filter($queryData['fields']);
+			}
 			$listOfFields = array();
 			foreach ((array)$queryData['fields'] as $field) {
 				if (strpos($field, '.') !== false) {
@@ -166,10 +172,12 @@ class ArraySource extends DataSource {
 				}
 				$listOfFields[] = $field;
 			}
-			foreach ($data as $id => $record) {
-				foreach ($record[$model->alias] as $field => $value) {
-					if (!in_array($field, $listOfFields)) {
-						unset($data[$id][$model->alias][$field]);
+			if (!empty($listOfFields)) {
+				foreach ($data as $id => $record) {
+					foreach ($record[$model->alias] as $field => $value) {
+						if (!in_array($field, $listOfFields)) {
+							unset($data[$id][$model->alias][$field]);
+						}
 					}
 				}
 			}
